@@ -1,5 +1,6 @@
 import cv2
 import mediapipe as mp
+import time
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -43,12 +44,24 @@ with mp_hands.Hands(
         cv2.imwrite('/tmp/annotated_image' + str(idx) + '.png', cv2.flip(annotated_image, 1))
 '''
  
+current_time = time.time()
+previous_time = time.time()
+cur_coordinate = [0,0]
+pre_coordinate = [0,0]
+
 # 웹캠, 영상 파일의 경우
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 200)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 200)
+
+font=cv2.FONT_HERSHEY_SIMPLEX
+text = ""
+
 with mp_hands.Hands(
     model_complexity=0,
     min_detection_confidence=0.5,
-    min_tracking_confidence=0.5) as hands:
+    min_tracking_confidence=0.5,
+    max_num_hands=1) as hands:
     
     while cap.isOpened():
         success, image = cap.read()
@@ -67,6 +80,20 @@ with mp_hands.Hands(
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         if results.multi_hand_landmarks:
+            if(current_time - previous_time >= 0.5) :
+                previous_time = time.time()
+                cur_coordinate = [hand_landmarks.landmark[8].x, hand_landmarks.landmark[8].y]
+                
+                if cur_coordinate[0] > pre_coordinate[0]:
+                    text = "LEFT"
+                else:
+                    text = "RIGHT"
+                pre_coordinate = cur_coordinate
+            
+            else:
+                current_time = time.time()
+
+            # Landmarks Drawing
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
                     image,
@@ -75,9 +102,13 @@ with mp_hands.Hands(
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style()
                 )
-        
+        else :
+            previous_time = time.time()
+
         # 보기 편하게 이미지 좌우반전
-        cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
+        image = cv2.flip(image, 1)
+        cv2.putText(image, text, (50, 100), font, 1, (255,0,0),2)
+        cv2.imshow('MediaPipe Hands', image)
         if cv2.waitKey(5) & 0xFF == 27:
             break
 cap.release()
