@@ -44,6 +44,7 @@ with mp_hands.Hands(
         cv2.imwrite('/tmp/annotated_image' + str(idx) + '.png', cv2.flip(annotated_image, 1))
 '''
  
+# Async running
 current_time = time.time()
 previous_time = time.time()
 cur_coordinate = [0,0]
@@ -54,6 +55,7 @@ cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 200)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 200)
 
+# Text Set
 font=cv2.FONT_HERSHEY_SIMPLEX
 text = ""
 
@@ -80,11 +82,16 @@ with mp_hands.Hands(
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         if results.multi_hand_landmarks:
+
+            # run on 0.5s peroid
             if(current_time - previous_time >= 0.5) :
                 previous_time = time.time()
                 cur_coordinate = [hand_landmarks.landmark[8].x, hand_landmarks.landmark[8].y]
-                
-                if cur_coordinate[0] > pre_coordinate[0]:
+
+                # identify moving
+                if abs(cur_coordinate[0] - pre_coordinate[0]) < 0.05:
+                    text = "NOT MOVING"
+                elif cur_coordinate[0] > pre_coordinate[0]:
                     text = "LEFT"
                 else:
                     text = "RIGHT"
