@@ -6,12 +6,26 @@ capture = cv2.VideoCapture(0)
 capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
+def nothing() :
+  pass
+
+cv2.namedWindow('HSV track Bar')
+cv2.createTrackbar('Saturation low value', 'HSV track Bar', 0, 255, nothing)
+cv2.createTrackbar('Saturation high value', 'HSV track Bar', 0, 255, nothing)
+
+cv2.setTrackbarPos('Saturation low value', 'HSV track Bar', 20)
+cv2.setTrackbarPos('Saturation high value', 'HSV track Bar', 255)
+
+
 # Running part
 while cv2.waitKey(33) < 0 :
   ret, frame = capture.read()
   hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-  h, s, v = cv2.split(hsv)
-  mask_green = cv2.inRange(h, 42, 61)
+
+  lvalue = np.array([42, cv2.getTrackbarPos('Saturation low value', 'HSV track Bar'), 20])      # 103
+  rvalue = np.array([61, cv2.getTrackbarPos('Saturation high value', 'HSV track Bar'), 255])
+
+  mask_green = cv2.inRange(hsv, lvalue, rvalue)
   kernel = np.ones((7,7),np.uint8)
 
   mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_CLOSE, kernel)
@@ -23,4 +37,4 @@ while cv2.waitKey(33) < 0 :
 
 
   cv2.imshow("VideoFrame", frame)
-  cv2.imshow("Hue track Bar", output)
+  cv2.imshow("HSV track Bar", output)
