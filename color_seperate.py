@@ -17,8 +17,10 @@ while cv2.waitKey(33) < 0 :
   mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_CLOSE, kernel)
   mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_OPEN, kernel)
 
-  cone = cv2.bitwise_and(hsv, hsv, mask=mask_green)
-  cone = cv2.cvtColor(cone, cv2.COLOR_HSV2BGR)
+  seg_cone = cv2.bitwise_and(hsv, hsv, mask=mask_green)
+  contours, hier = cv2.findContours(mask_green.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+  output = cv2.drawContours(seg_cone, contours, -1, (0,0,255), 3)
+
 
   cv2.imshow("VideoFrame", frame)
-  cv2.imshow("Hue track Bar", cone)
+  cv2.imshow("Hue track Bar", output)
