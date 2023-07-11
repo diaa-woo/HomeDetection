@@ -22,7 +22,7 @@ while cv2.waitKey(33) < 0 :
   ret, frame = capture.read()
   hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-  lvalue = np.array([42, 103, cv2.getTrackbarPos('Value low value', 'HSV track Bar')])   
+  lvalue = np.array([42, 103, cv2.getTrackbarPos('Value low value', 'HSV track Bar')])      #20
   rvalue = np.array([61, 255, cv2.getTrackbarPos('Value high value', 'HSV track Bar')])
 
   mask_green = cv2.inRange(hsv, lvalue, rvalue)
